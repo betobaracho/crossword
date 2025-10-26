@@ -1,0 +1,32 @@
+casa;local onde se mora
+carro;meio de transporte com quatro rodas
+bicicleta;meio de transporte com pedais
+escola;lugar onde se aprende
+flor;planta colorida
+livro;objeto cheio de páginas
+computador;máquina para processar informações
+telefone;dispositivo para se comunicar
+barbeiro;profissão que corta cabelo
+cachorro;animal doméstico fiel
+gato;animal doméstico independente
+esmeralda;pedra preciosa verde
+janela;abertura na parede para entrada de luz
+professor;pessoa que ensina
+rio;curso natural de água
+ponte;estrutura que liga margens
+montanha;elevação natural de grande altura
+oceano;grande massa de água salgada
+foguete;veículo que vai ao espaço
+relógio;marca o tempo
+cadeira;objeto usado para sentar
+mesa;superfície para apoiar objetos
+sol;estrela do nosso sistema
+lua;satélite natural da Terra
+nuvem;formação de vapor d'água
+vento;movimento do ar
+chuva;precipitação de água
+fogo;reação de combustão
+terra;planeta onde vivemos
+estrela;corpo celeste que emite luz
+
+ 
