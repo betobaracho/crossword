@@ -1,7 +1,7 @@
 # Visual Studio
 .vs/
-*.user
 *.suo
+*.user
 *.userosscache
 *.sln.docstates
 
@@ -15,7 +15,8 @@ Release*/
 build*/
 out/
 
-# Compiled binaries
+# Compiled binaries and intermediates
+*.obj
 *.exe
 *.dll
 *.lib
@@ -25,7 +26,7 @@ out/
 *.idb
 *.pch
 
-# Logs and cache
+# Logs and temporary
 *.log
 *.tlog
 *.tmp
@@ -34,3 +35,6 @@ out/
 *.opendb
 *.VC.db
 *.VC.VC.opendb
+
+# Temporary or analysis files
+allfiles.txt
