@@ -3,6 +3,8 @@
 #include <vector>
 #include "Palavra.h"
 #include "Posicao.h"
+
+#include "BancoDePalavras.h"  // garante visibilidade
 class Tabuleiro {
 public:
 	Tabuleiro();
@@ -16,8 +18,10 @@ public:
 	bool tentarDescobrirPalavra(int numero, const std::string& tentativa);
 	int getAltura() const;
 	int getComprimento() const;
-	int  avaliarPosicao(const Palavra& p, int linha, int coluna, int sentido, int orientacao);
+	int  avaliarPosicao(Palavra& p, int linha, int coluna, int sentido, int orientacao);
 	void posicionarHeuristico(Palavra& p);
+	void gerarTabuleiroHeuristico(BancoDePalavras& banco);
+
 
 private:
 	const int altura = 20;

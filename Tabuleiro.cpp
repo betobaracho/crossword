@@ -7,7 +7,7 @@
 #define MAGENTA "\033[35m"
 #define CYAN    "\033[36m"
 #define WHITE   "\033[37m"
-
+#define GRAY    "\033[90m"
 
 #include<iostream>
 using std::cout;
@@ -32,7 +32,70 @@ void Tabuleiro::mostrarTabuleiro() {
     std::cout << toString();
 }
 
-int Tabuleiro::avaliarPosicao(const Palavra& p, int linha, int coluna, int sentido, int orientacao) {
+
+
+void Tabuleiro::gerarTabuleiroHeuristico(BancoDePalavras& banco) {
+    int cruzamento = 0;
+    bool forcarCruzamento = false;
+
+    for (int i = 0; i < banco.getQuantidade(); i++) {
+        Palavra p = banco.getPalavra(i);
+        bool posicaoDisponivel = false;
+        int tentativas = 0;
+
+        // ativa cruzamento obrigatório se metade já foi colocada sem cruzar
+        if (i > (banco.getQuantidade() / 2) + 1 && cruzamento == 0) {
+            forcarCruzamento = true;
+        }
+
+        do {
+            tentativas++;
+
+            // evita loop infinito
+            if (tentativas > 300) {
+                std::cerr << "[AVISO] Não foi possível posicionar '" << p.getPalavra()
+                    << "' após 300 tentativas.\n";
+                break;
+            }
+
+            // gera uma posição aleatória e avalia
+            p.gerarPosicaoAleatoria(getAltura(), getComprimento());
+            int score = avaliarPosicao(
+                p,
+                p.getPosicao().getLinha(),
+                p.getPosicao().getColuna(),
+                p.getSentido(),
+                p.getOrientacao()
+            );
+
+            int limiteScore = 40; // limite base de cruzamento forte
+
+            if (score > 0 && score < limiteScore && !forcarCruzamento) {
+                addPalavra(p);
+                adicionarPalavraJogo(p);
+                posicaoDisponivel = true;
+            }
+
+            if (score >= limiteScore) {
+                addPalavra(p);
+                adicionarPalavraJogo(p);
+                posicaoDisponivel = true;
+                cruzamento++;
+                forcarCruzamento = false;
+            }
+
+        } while (!posicaoDisponivel || forcarCruzamento);
+
+        // log simples opcional
+        std::cout << "✔ Palavra '" << p.getPalavra()
+            << "' posicionada | Score: " << avaliarPosicao(p, p.getPosicao().getLinha(),
+                p.getPosicao().getColuna(), p.getSentido(), p.getOrientacao())
+            << " | Cruzamentos bons: " << cruzamento <<" | " << p.getPosicao().getLinha() << ","<< p.getPosicao().getColuna()
+            << std::endl;
+    }
+}
+
+int Tabuleiro::avaliarPosicao(Palavra& p, int linha, int coluna, int sentido, int orientacao) {
     const std::string& texto = p.getPalavra();
     const int len = (int)texto.size();
 
@@ -73,13 +136,25 @@ int Tabuleiro::avaliarPosicao(const Palavra& p, int linha, int coluna, int senti
         }
     }
 
-    // leve preferência por bordas/cantos (opcional)
-    if (linha < 3 || linha > altura - 3 || coluna < 3 || coluna > comprimento - 3) score += 1;
+    // 5️⃣ Penalização por densidade local
+    int letrasProximas = 0;
+    for (int rr = std::max(0, linha - 2); rr < std::min(altura, linha + 3); ++rr) {
+        for (int cc = std::max(0, coluna - 2); cc < std::min(comprimento, coluna + 3); ++cc) {
+            if (tabuleiro[rr][cc].getLetra() != '.') letrasProximas++;
+        }
+    }
+
+    // penaliza áreas muito cheias
+    if (letrasProximas > len * 1.5) score -= 5;
+    else if (letrasProximas > len * 2) score -= 10;
+
+    // leve aleatoriedade para dispersão natural
+    score += rand() % 3 - 1;
 
     return score;
 }
 
-void Tabuleiro::posicionarHeuristico(Palavra& p) {
+ void Tabuleiro::posicionarHeuristico(Palavra& p) {
     int melhorScore = -99999;
     int melhorLinha = 0, melhorColuna = 0, melhorSentido = 0, melhorOrientacao = 0;
 
@@ -87,7 +162,15 @@ void Tabuleiro::posicionarHeuristico(Palavra& p) {
         for (int orientacao = 0; orientacao < 2; ++orientacao) { // 0=dir/baixo, 1=esq/cima
             for (int r = 0; r < altura; ++r) {
                 for (int c = 0; c < comprimento; ++c) {
-                    int s = avaliarPosicao(p, r, c, sentido, orientacao);
+                 /*   int ran = rand();
+                    int rVar = (r + ran % 3 - 1 + altura) % altura;       // variação de até ±1
+                    int cVar = (c + ran % 3 - 1 + comprimento) % comprimento;
+                    int s = avaliarPosicao(p, rVar, cVar, sentido, orientacao);
+                    */
+                    int rVar = altura - r;
+                    int cVar = comprimento - c;
+                    int s = avaliarPosicao(p, rVar, cVar, sentido, orientacao);
+                   // int s = avaliarPosicao(p, r, c, sentido, orientacao);
                     if (s > melhorScore) {
                         melhorScore = s;
                         melhorLinha = r; melhorColuna = c;
@@ -173,32 +256,6 @@ bool Tabuleiro::checkarColisao(Palavra& p) {
 }
 */
 
-
-void Tabuleiro::addPalavra(Palavra& p) {
-    const std::string& texto = p.getPalavra();
-    const int len = (int)texto.size();
-
-    int r0 = p.getPosicao().getLinha();
-    int c0 = p.getPosicao().getColuna();
-
-    int dx = 0, dy = 0;
-    if (p.getSentido() == 0) { dx = (p.getOrientacao() == 0 ? +1 : -1); dy = 0; }
-    else { dx = 0; dy = (p.getOrientacao() == 0 ? +1 : -1); }
-
-    for (int k = 0; k < len; ++k) {
-        int r = r0 + dy * k;
-        int c = c0 + dx * k;
-
-        if (r < 0 || r >= altura || c < 0 || c >= comprimento) return;
-
-        char letra = texto[k];
-        tabuleiro[r][c].setLetra(letra);
-        tabuleiro[r][c].setOcupada(true);
-
-        // se guarda as posições na Palavra:
-        p.adicionarPosicao(Posicao(r, c, letra));
-    }
-}
 
 bool Tabuleiro::checkarColisao(Palavra& p) {
     const std::string& texto = p.getPalavra();
@@ -315,15 +372,18 @@ void Tabuleiro::mostrarComProgresso() const {
 
             if (tabuleiro[i][j].isOcupada()) { //tem uma letra de uma palavra
                 if (tabuleiro[i][j].getOculta()) { //a palavra que tem a letra ainda não foi descoberta
-                   // cout << 'X';
-                    cout << tabuleiro[i][j].getLetra();
+                    //cout << 'X';
+                    cout << GRAY << "·" << RESET;
+                   // cout << tabuleiro[i][j].getLetra();
                 }
                 else { //tem uma letra e esta palavra já foi descoberta
-                    cout << tabuleiro[i][j].getLetra();
+                    std::cout << GREEN << tabuleiro[i][j].getLetra()  << RESET;
+                   // cout << tabuleiro[i][j].getLetra();
                 }
             }
             else { //não tem uma letra
-                cout << tabuleiro[i][j].getLetra();
+                std::cout << WHITE << tabuleiro[i][j].getLetra() << RESET;
+               // cout << tabuleiro[i][j].getLetra();
             }         
             cout << ' ';
         }
@@ -331,7 +391,33 @@ void Tabuleiro::mostrarComProgresso() const {
     }
 }
 
+void Tabuleiro::addPalavra(Palavra& p) {
+    const std::string& texto = p.getPalavra();
+    const int len = (int)texto.size();
 
+    int r0 = p.getPosicao().getLinha();
+    int c0 = p.getPosicao().getColuna();
+
+    int dx = 0, dy = 0;
+    if (p.getSentido() == 0) { dx = (p.getOrientacao() == 0 ? +1 : -1); dy = 0; }
+    else { dx = 0; dy = (p.getOrientacao() == 0 ? +1 : -1); }
+
+    for (int k = 0; k < len; ++k) {
+        int r = r0 + dy * k;
+        int c = c0 + dx * k;
+
+        if (r < 0 || r >= altura || c < 0 || c >= comprimento) return;
+
+        char letra = texto[k];
+        tabuleiro[r][c].setLetra(letra);
+        tabuleiro[r][c].setOcupada(true);
+
+        // se guarda as posições na Palavra:
+        p.adicionarPosicao(Posicao(r, c, letra));
+    }
+}
+
+/*
 void Tabuleiro::addPalavra(Palavra& p) {
     int sentido = p.getSentido();
     int orientacao = p.getOrientacao();
@@ -424,3 +510,4 @@ void Tabuleiro::addPalavra(Palavra& p) {
         }
     }
 }
+*/

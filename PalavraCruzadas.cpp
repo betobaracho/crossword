@@ -1,37 +1,20 @@
 ﻿#include <iostream>
-#include <cstdlib>
-#include <ctime>
 #include <windows.h>
+#include <ctime>
 #include "BancoDePalavras.h"
 #include "Tabuleiro.h"
 using namespace std;
 
 int main() {
-
     SetConsoleOutputCP(CP_UTF8);
     srand(static_cast<unsigned>(time(nullptr)));
 
     Tabuleiro tabuleiro;
-    
     BancoDePalavras banco("palavras.txt");
     banco.carregar();
 
-    // carregar 5 palavras no tabuleiro
-   // cout << tabuleiro.toString();
-    for (int i = 0; i < banco.getQuantidade(); i++) {
-        Palavra p = banco.getPalavra(i); //banco.obterAleatoria();
-        bool posicaoDisponivel = false;
-        do {
-
-            p.gerarPosicaoAleatoria(tabuleiro.getAltura(), tabuleiro.getComprimento());           
-            if (tabuleiro.checkarColisao(p)) {
-                tabuleiro.addPalavra(p);
-                tabuleiro.adicionarPalavraJogo(p);
-                posicaoDisponivel = true;
-            }
-        }
-        while (!posicaoDisponivel);
-    }
+    cout << "Gerando tabuleiro heurístico...\n";
+    tabuleiro.gerarTabuleiroHeuristico(banco);
 
     int opcao = -1;
     while (opcao != 0) {
@@ -43,9 +26,7 @@ int main() {
         cout << "Escolha: ";
         cin >> opcao;
 
-        if (opcao == 1) {
-            tabuleiro.mostrarDicas();
-        }
+        if (opcao == 1) tabuleiro.mostrarDicas();
         else if (opcao == 2) {
             int numero;
             string tentativa;
@@ -55,17 +36,12 @@ int main() {
             cout << "Digite sua resposta: ";
             cin >> tentativa;
 
-            if (tabuleiro.tentarDescobrirPalavra(numero, tentativa)) {
-                // Aqui você pode atualizar pontuação ou mostrar o tabuleiro
+            if (tabuleiro.tentarDescobrirPalavra(numero, tentativa))
                 tabuleiro.mostrarComProgresso();
-            }
-            else {
+            else
                 cout << "Tente novamente!\n";
-            }
         }
-        else if (opcao == 3) {
-            tabuleiro.mostrarComProgresso();
-        }
+        else if (opcao == 3) tabuleiro.mostrarComProgresso();
     }
 
     cout << "Fim de jogo!\n";

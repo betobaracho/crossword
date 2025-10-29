@@ -27,7 +27,7 @@ public:
     void gerarPosicaoAleatoria(int alturaMax, int larguraMax);
     void adicionarPosicao(const Posicao& p);
     std::vector<Posicao> getPosicoes() const;
-    void gerarPosicaoHeuristica(const Tabuleiro& tabuleiro);
+    //void gerarPosicaoHeuristica(Tabuleiro& tabuleiro);
 
 private:
     string palavra;

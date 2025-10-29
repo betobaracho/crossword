@@ -28,5 +28,3 @@ chuva;precipitação de água
 fogo;reação de combustão
 terra;planeta onde vivemos
 estrela;corpo celeste que emite luz
-
- 

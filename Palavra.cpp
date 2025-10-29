@@ -103,9 +103,9 @@ std::vector<Posicao> Palavra::getPosicoes() const {
     return posicoes;
 }
 
-
 /*
-void Palavra::gerarPosicaoHeuristica(const Tabuleiro& tabuleiro) {
+
+void Palavra::gerarPosicaoHeuristica(Tabuleiro& tabuleiro) {
     int melhorScore = -99999;
     int melhorLinha = 0;
     int melhorColuna = 0;
