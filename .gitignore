@@ -38,3 +38,7 @@ out/
 
 # Temporary or analysis files
 allfiles.txt
+
+# Configuracao local e credenciais
+config.ini
+

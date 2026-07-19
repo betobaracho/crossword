@@ -16,6 +16,8 @@ using std::setw;
 using std::endl;
 #include "Tabuleiro.h"
 #include <sstream>
+#include <algorithm>
+#include <cctype>
 
 Tabuleiro::Tabuleiro() {
     cout << setw(2);
@@ -32,7 +34,10 @@ void Tabuleiro::mostrarTabuleiro() {
     std::cout << toString();
 }
 
-
+void Tabuleiro::limparPalavrasDoJogo() { 
+    this->palavrasDoJogo.clear();
+     
+}
 
 void Tabuleiro::gerarTabuleiroHeuristico(BancoDePalavras& banco) {
     int cruzamento = 0;
@@ -86,12 +91,7 @@ void Tabuleiro::gerarTabuleiroHeuristico(BancoDePalavras& banco) {
 
         } while (!posicaoDisponivel || forcarCruzamento);
 
-        // log simples opcional
-        std::cout << "✔ Palavra '" << p.getPalavra()
-            << "' posicionada | Score: " << avaliarPosicao(p, p.getPosicao().getLinha(),
-                p.getPosicao().getColuna(), p.getSentido(), p.getOrientacao())
-            << " | Cruzamentos bons: " << cruzamento <<" | " << p.getPosicao().getLinha() << ","<< p.getPosicao().getColuna()
-            << std::endl;
+        
     }
 }
 
@@ -191,70 +191,6 @@ int Tabuleiro::avaliarPosicao(Palavra& p, int linha, int coluna, int sentido, in
     p.setOrientacao(melhorOrientacao);
 }
 
-/*
-bool Tabuleiro::checkarColisao(Palavra& p) {
-    int sentido = p.getSentido();
-    int orientacao = p.getOrientacao();
-    string palavra = p.getPalavra();
-    Posicao posicao = p.getPosicao();
-    int linha = posicao.getLinha();
-    int coluna = posicao.getColuna();
-    int tamanhoPalavra = p.getTamanho();
-    int caracter = 0;
-    
-    if (sentido == 0) { //horizontal
-        if (orientacao == 0) { //para a direita
-            for (int i = coluna; i < coluna + tamanhoPalavra; i++) {
-
-                if (i < 0 || i >= comprimento || linha < 0 || linha >= altura)
-                    return false;
-
-                if (tabuleiro[linha][i].getLetra() != palavra.at(caracter++) && tabuleiro[linha][i].getLetra() != '.') {
-                    return false;
-                }
-            }
-            return true;
-        }
-        else if (orientacao == 1) { //para a esquerda
-
-           // for (int i = coluna + tamanhoPalavra; i > coluna; i--) {
-            for (int i = coluna; i > coluna - tamanhoPalavra; i--) {
-                if (i < 0 || i >= comprimento || linha < 0 || linha >= altura)
-                    return false;
-                if (tabuleiro[linha][i].getLetra() != palavra.at(caracter++) && tabuleiro[linha][i].getLetra() != '.') {
-                    return false;
-
-                }
-            }
-            return true;
-        }
-    }
-    else if (sentido == 1) { //vertical
-        if (orientacao == 0) { //para baixo
-            for (int i = linha; i < linha + tamanhoPalavra; i++) {
-                if (i < 0 || i >= comprimento || linha < 0 || linha >= altura)
-                    return false;
-                if (tabuleiro[i][coluna].getLetra() != palavra.at(caracter++) || tabuleiro[i][coluna].getLetra() != '.') {
-                    return false;
-                }
-            }
-            return true;
-        }
-        else if (orientacao == 1) { //para cima
-            for (int i = linha; i > linha - tamanhoPalavra; i--) {
-                if (i < 0 || i >= comprimento || linha < 0 || linha >= altura)
-                    return false;
-                if (tabuleiro[i][coluna].getLetra() != palavra.at(caracter++) && tabuleiro[i][coluna].getLetra() != '.') {
-                    return false;
-                }
-            }
-            return true;
-        }
-    }
-
-    return true;
-}
-*/
 
 
 bool Tabuleiro::checkarColisao(Palavra& p) {
@@ -294,31 +230,45 @@ std::string Tabuleiro::toString() const {
     return buffer.str();
 }
 
+string normalizar(string texto) {
+    transform(texto.begin(), texto.end(), texto.begin(),
+        [](unsigned char c) { return tolower(c); });
+
+    return texto;
+}
+
+Palavra& Tabuleiro::getPalavraPorNumero(int numero) {
+    return palavrasDoJogo[numero - 1];
+}
+
 bool Tabuleiro::tentarDescobrirPalavra(int numero, const std::string& tentativa) {
-    // Ajuste de índice: jogador digita 1,2,3... então subtrai 1
     int idx = numero - 1;
+
     if (idx < 0 || idx >= (int)palavrasDoJogo.size()) {
         std::cout << "Número inválido.\n";
         return false;
     }
 
     Palavra& p = palavrasDoJogo[idx];
-    if (tentativa == p.getPalavra()) {
+
+    string tentativaNormalizada = normalizar(tentativa);
+    string palavraNormalizada = normalizar(p.getPalavra());
+
+    if (tentativaNormalizada == palavraNormalizada) {
         p.setDescoberta(true);
         p.getPosicao().setOculta(false);
 
-        
-        for (Posicao posicao : p.getPosicoes()) {            
+        for (Posicao posicao : p.getPosicoes()) {
             tabuleiro[posicao.getLinha()][posicao.getColuna()].setOculta(false);
         }
-                       
-        std::cout << "✅ Você acertou a palavra \"" << p.getPalavra() << "\"!\n";
+
+        std::cout << " Resposta Correta: \"" << p.getPalavra() << "\"!\n";
         return true;
     }
-    else {
-        std::cout << "❌ Palavra incorreta. Tente novamente.\n";
-        return false;
-    }
+
+    std::cout << "X Palavra incorreta. Tente novamente.\n";
+    p.adicionarTentativaErrada(tentativa);
+    return false;
 }
 
 void Tabuleiro::adicionarPalavraJogo(const Palavra& p) {
@@ -327,14 +277,14 @@ void Tabuleiro::adicionarPalavraJogo(const Palavra& p) {
 
 void Tabuleiro::mostrarDicas(){
     cout << CYAN << "\n=== DICAS ===\n" << RESET;
-   // cout << "\n=== DICAS ===\n";
+   
     int i = 1;
     for (Palavra p : palavrasDoJogo) {
         cout << YELLOW << setw(2) << i++ << ". " << RESET;
-       // cout << i++ << ". ";
+       
         if (p.isDescoberta()) {
             cout << GREEN << p.getPalavra() << RESET;
-            cout << " " << MAGENTA << "(✔ " << p.getDica() << ")" << RESET;
+            cout << " " << MAGENTA << "(" << p.getDica() << ")" << RESET;
         }
         else {
             cout << WHITE;
@@ -347,12 +297,29 @@ void Tabuleiro::mostrarDicas(){
                     cout << "_ ";
                 else cout << p.getPosicoes().at(j).getLetra();*/
             }
-               
+            
             cout << RESET;
             cout << " " << CYAN << "(" << p.getDica() << ")" << RESET;
+            cout << " " << RED << tentativasErradas(p.getTentativasErradas()) << RESET;
         }
         cout << endl;
     }
+}
+
+string Tabuleiro::tentativasErradas(std::vector<string> tentativasErradas) {
+    if (tentativasErradas.empty()) {
+        return "";
+    }
+
+    string resultado;
+    int sentinelaVirgula = 0;
+    for (string tentativa : tentativasErradas) {
+        resultado += (tentativasErradas.size() > 1 && (sentinelaVirgula++) > 0)  ? "," : "";
+        resultado += " " + tentativa;
+        
+    }
+
+    return resultado;
 }
 
 int Tabuleiro::getAltura() const {
@@ -372,18 +339,18 @@ void Tabuleiro::mostrarComProgresso() const {
 
             if (tabuleiro[i][j].isOcupada()) { //tem uma letra de uma palavra
                 if (tabuleiro[i][j].getOculta()) { //a palavra que tem a letra ainda não foi descoberta
-                    //cout << 'X';
+                    
                     cout << GRAY << "·" << RESET;
-                   // cout << tabuleiro[i][j].getLetra();
+                    //cout << ".";// tabuleiro[i][j].getLetra();
                 }
                 else { //tem uma letra e esta palavra já foi descoberta
                     std::cout << GREEN << tabuleiro[i][j].getLetra()  << RESET;
-                   // cout << tabuleiro[i][j].getLetra();
+                    //std::cout << tabuleiro[i][j].getLetra();
                 }
             }
             else { //não tem uma letra
                 std::cout << WHITE << tabuleiro[i][j].getLetra() << RESET;
-               // cout << tabuleiro[i][j].getLetra();
+                //std::cout<<tabuleiro[i][j].getLetra();
             }         
             cout << ' ';
         }

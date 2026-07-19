@@ -14,7 +14,8 @@ Palavra::Palavra() {
     sentido = 0;
     orientacao = 0;
     dica = "";
-    descoberta = false;    
+    descoberta = false;   
+    tentativas = 0;
 }
 
 void Palavra::setPalavra(string palavraNova) {
@@ -61,6 +62,18 @@ void Palavra::setDica(string d) {
     dica = d;
 }
 
+string Palavra::letrasConhecidas() {
+    return string(getTamanho(), '_');
+   /* string letras(palavra.length(), '_');
+
+    for (int i = 0; i < posicoes.size(); i++) {
+        if (!posicoes[i].isOculta()) {
+            letras[i] = palavra[i];
+        }
+    }
+
+    return letras;*/
+}
 
 bool Palavra::isDescoberta() {
     return descoberta;
@@ -101,6 +114,30 @@ void Palavra::adicionarPosicao(const Posicao& p) {
 
 std::vector<Posicao> Palavra::getPosicoes() const {
     return posicoes;
+}
+
+void Palavra::setTentativas(int n) {
+    tentativas = n;
+}
+
+int Palavra::getTentativas() {
+    return tentativas;
+}
+
+void Palavra::incrementartentativas() {
+    tentativas++;
+}
+
+void Palavra::mostrarComoDescoberta() {
+    descoberta = true;
+}
+
+void Palavra::adicionarTentativaErrada(string tentativa) {
+    tentativasErradas.push_back(tentativa);
+}
+
+std::vector<string> Palavra::getTentativasErradas() const {
+    return tentativasErradas;
 }
 
 /*

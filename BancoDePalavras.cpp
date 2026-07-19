@@ -5,9 +5,38 @@
 #include <cstdlib>  // rand, srand
 #include <ctime>
 #include <filesystem>
-BancoDePalavras::BancoDePalavras(const std::string& caminhoArquivo)
+BancoDePalavras::BancoDePalavras(const std::string& caminhoArquivo, const std::string& conteudo)
     : arquivo(caminhoArquivo) {
     srand(static_cast<unsigned>(time(nullptr)));
+  
+    if (!conteudo.empty())
+    {
+        std::ofstream arq(arquivo);
+        arq << converterQuebrasDeLinha(conteudo);
+        arq.close();
+    }
+}
+
+string BancoDePalavras::converterQuebrasDeLinha(string texto) {
+    size_t pos = 0;
+    while ((pos = texto.find("\\n", pos)) != string::npos) {
+        texto.replace(pos, 2, "\n");
+        pos += 1;
+    }
+    return texto;
+}
+
+bool BancoDePalavras::recarregarArquivo(const std::string& conteudo) {
+    this->palavras.clear();
+    srand(static_cast<unsigned>(time(nullptr)));
+    if (!conteudo.empty())
+    {
+        std::ofstream arq(arquivo);
+        arq << converterQuebrasDeLinha(conteudo);
+        arq.close();
+    }
+    carregar();
+    return true;
 }
 
 bool BancoDePalavras::carregar() {

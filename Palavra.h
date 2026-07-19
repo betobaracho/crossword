@@ -21,13 +21,19 @@ public:
     void setSentido(int);
     string getDica();
     void setDica(string);
-    void mostrarPalavra();
+   // void mostrarPalavra();
     bool isDescoberta();
     void setDescoberta(bool);    
     void gerarPosicaoAleatoria(int alturaMax, int larguraMax);
     void adicionarPosicao(const Posicao& p);
     std::vector<Posicao> getPosicoes() const;
-    //void gerarPosicaoHeuristica(Tabuleiro& tabuleiro);
+    void setTentativas(int t);
+    int getTentativas();
+    void incrementartentativas();
+    void mostrarComoDescoberta();
+    void adicionarTentativaErrada(string tentativa);
+    std::vector<string> getTentativasErradas() const;
+    string letrasConhecidas();
 
 private:
     string palavra;
@@ -37,7 +43,9 @@ private:
     int orientacao;
     string dica;
     bool descoberta;    
+    int tentativas;
     std::vector<Posicao> posicoes;
+    std::vector<string> tentativasErradas;
 };
 
 #endif

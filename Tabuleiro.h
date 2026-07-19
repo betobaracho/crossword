@@ -21,12 +21,14 @@ public:
 	int  avaliarPosicao(Palavra& p, int linha, int coluna, int sentido, int orientacao);
 	void posicionarHeuristico(Palavra& p);
 	void gerarTabuleiroHeuristico(BancoDePalavras& banco);
-
-
+	Palavra& getPalavraPorNumero(int numero);
+	string tentativasErradas(std::vector<string> tentativasErradas);
+	void limparPalavrasDoJogo();
+	void limparTabuleiro();
 private:
 	const int altura = 20;
 	const int comprimento = 20;
-	//char tabuleiro[20][20];
+	
 	Posicao tabuleiro[20][20];
 	std::vector<Palavra> palavrasDoJogo;
 };

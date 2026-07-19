@@ -123,11 +123,21 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="AssistenteIA.cpp" />
     <ClCompile Include="BancoDePalavras.cpp" />
+    <ClCompile Include="Configuracao.cpp" />
     <ClCompile Include="Palavra.cpp" />
     <ClCompile Include="PalavraCruzadas.cpp" />
     <ClCompile Include="Posicao.cpp" />
     <ClCompile Include="Tabuleiro.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="AssistenteIA.h" />
+    <ClInclude Include="BancoDePalavras.h" />
+    <ClInclude Include="Configuracao.h" />
+    <ClInclude Include="Palavra.h" />
+    <ClInclude Include="Posicao.h" />
+    <ClInclude Include="Tabuleiro.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
